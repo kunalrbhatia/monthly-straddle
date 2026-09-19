@@ -11,16 +11,15 @@ dotenv.config();
  * string explicitly so "false" / "0" / "no" / "off" are falsy.
  */
 const envBool = (defaultValue: boolean) =>
-  z
-    .preprocess((v) => {
-      if (typeof v === 'string') {
-        const s = v.trim().toLowerCase();
-        if (['false', '0', 'no', 'off', ''].includes(s)) return false;
-        if (['true', '1', 'yes', 'on'].includes(s)) return true;
-        return undefined; // unknown string -> fall back to default
-      }
-      return v;
-    }, z.boolean().default(defaultValue));
+  z.preprocess((v) => {
+    if (typeof v === 'string') {
+      const s = v.trim().toLowerCase();
+      if (['false', '0', 'no', 'off', ''].includes(s)) return false;
+      if (['true', '1', 'yes', 'on'].includes(s)) return true;
+      return undefined; // unknown string -> fall back to default
+    }
+    return v;
+  }, z.boolean().default(defaultValue));
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
