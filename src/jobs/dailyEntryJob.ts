@@ -7,7 +7,12 @@ import {
   resolveMonthlyExpiries,
   ScripItem,
 } from '../helpers/scripMaster.js';
-import { isTradingDay, calculateDTE, getAdjusted21DteDate } from '../helpers/holidayCheck.js';
+import {
+  isTradingDay,
+  calculateDTE,
+  getAdjusted21DteDate,
+  getAdjustedTargetDteDate,
+} from '../helpers/holidayCheck.js';
 import { fetchLTP, roundToNearestStrikeInterval } from '../helpers/marketData.js';
 import { placeOrder } from '../helpers/orders.js';
 import { modeManager } from '../helpers/modeManager.js';
@@ -96,7 +101,10 @@ export async function runDailyJob(): Promise<void> {
   for (const expStr of monthlyExpiries) {
     const expDate = new Date(expStr);
     const dte = calculateDTE(today, expDate);
-    if (dte >= env.TARGET_DTE - 3 && dte <= env.TARGET_DTE + 3) {
+    if (
+      dte >= env.TARGET_DTE - env.ENTRY_DTE_WINDOW &&
+      dte <= env.TARGET_DTE + env.ENTRY_DTE_WINDOW
+    ) {
       candidateExpiryStr = expStr;
       candidateDTE = dte;
       break;
@@ -105,15 +113,31 @@ export async function runDailyJob(): Promise<void> {
 
   logger.info(`Candidate monthly expiry: ${candidateExpiryStr}, DTE: ${candidateDTE}`);
 
-  if (candidateDTE !== env.TARGET_DTE) {
+  if (!candidateExpiryStr) {
     logger.info(
-      `DTE is ${candidateDTE} (target is ${env.TARGET_DTE}). No entry action required today.`
+      `No monthly expiry within ${env.TARGET_DTE}±${env.ENTRY_DTE_WINDOW} DTE. No entry action required today.`
     );
     return;
   }
 
-  // Confirmed 45-DTE day! Proceed to Step 2: Strike Resolution
-  logger.info(`🎯 Confirmed ${env.TARGET_DTE}-DTE day! Commencing dual-ATM strike resolution.`);
+  // The exact TARGET_DTE day frequently falls on a non-trading day — a Tuesday monthly expiry
+  // minus 45 days is ALWAYS a Saturday — so the old `candidateDTE === TARGET_DTE` check could
+  // never fire. Anchor the entry to the nearest PREVIOUS trading day instead and fire on the
+  // first trading day on/after it. This also tolerates a missed cron run: if the entry day is
+  // skipped, the next trading day still satisfies today >= targetEntryDate.
+  const targetEntryDate = getAdjustedTargetDteDate(new Date(candidateExpiryStr), env.TARGET_DTE);
+  const targetEntryStr = getISTDateString(targetEntryDate);
+  if (getISTDateString(today) < targetEntryStr) {
+    logger.info(
+      `Target entry date for ${candidateExpiryStr} is ${targetEntryStr} (target ${env.TARGET_DTE} DTE). No entry action required today.`
+    );
+    return;
+  }
+
+  // Confirmed entry day! Proceed to Step 2: Strike Resolution
+  logger.info(
+    `🎯 Confirmed entry day for ${candidateExpiryStr} (current DTE: ${candidateDTE}, target ${env.TARGET_DTE}±${env.ENTRY_DTE_WINDOW}). Commencing dual-ATM strike resolution.`
+  );
 
   // 1. Fetch spot LTP and future LTP
   const spotLTP = await fetchLTP(

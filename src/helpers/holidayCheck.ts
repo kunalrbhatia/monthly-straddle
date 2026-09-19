@@ -62,11 +62,23 @@ export function calculateDTE(today: Date, expiryDate: Date): number {
  * Never next trading day.
  */
 export function getAdjusted21DteDate(expiryDate: Date): Date {
+  return getAdjustedTargetDteDate(expiryDate, 21);
+}
+
+/**
+ * Generic DTE anchor: expiry - `targetDte` calendar days, rolled BACKWARDS to the nearest
+ * previous trading day when it lands on a weekend/holiday.
+ *
+ * Used for the 45-DTE entry anchor. A NIFTY monthly expiry is typically a Tuesday, and
+ * Tuesday - 45 days is ALWAYS a Saturday — so without this rollback the entry date would
+ * never be a trading day and the strategy would never enter.
+ */
+export function getAdjustedTargetDteDate(expiryDate: Date, targetDte: number): Date {
   const expiryISTStr = getISTDateString(expiryDate);
   const [y, m, d] = expiryISTStr.split('-').map(Number);
-  const dte21Utc = Date.UTC(y, m - 1, d - 21);
+  const targetUtc = Date.UTC(y, m - 1, d - targetDte);
 
-  let current = new Date(dte21Utc);
+  let current = new Date(targetUtc);
   while (!isTradingDay(current)) {
     // Step backwards 1 day
     current = new Date(current.getTime() - 24 * 60 * 60 * 1000);

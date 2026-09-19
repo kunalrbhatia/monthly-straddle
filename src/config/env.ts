@@ -44,6 +44,8 @@ const envSchema = z.object({
   // Strategy Config
   LOT_SIZE: z.coerce.number().default(65),
   TARGET_DTE: z.coerce.number().default(45),
+  /** Tolerance (in days) around TARGET_DTE used to locate the entry month. */
+  ENTRY_DTE_WINDOW: z.coerce.number().default(3),
   HARD_EXIT_DTE: z.coerce.number().default(21),
   PT_PCT_OF_PREMIUM: z.coerce.number().default(50),
   SL_PCT_OF_PREMIUM: z.coerce.number().default(100),
