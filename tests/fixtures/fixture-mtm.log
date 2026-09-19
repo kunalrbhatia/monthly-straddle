@@ -1,0 +1,4 @@
+2026-10-01 09:30:00 | NIFTY | strike=24500 | ceLTP=150.00 | peLTP=150.00 | combinedPremium=19500.00 | unrealizedPnL=0.00 | pctOfSL=0.0 | pctOfPT=0.0
+2026-10-01 11:30:00 | NIFTY | strike=24500 | ceLTP=140.00 | peLTP=145.00 | combinedPremium=18525.00 | unrealizedPnL=975.00 | pctOfSL=0.0 | pctOfPT=10.0
+2026-10-01 13:30:00 | NIFTY | strike=24500 | ceLTP=130.00 | peLTP=135.00 | combinedPremium=17225.00 | unrealizedPnL=2275.00 | pctOfSL=0.0 | pctOfPT=23.3
+2026-10-01 15:30:00 | NIFTY | strike=24500 | ceLTP=120.00 | peLTP=125.00 | combinedPremium=15925.00 | unrealizedPnL=3575.00 | pctOfSL=0.0 | pctOfPT=36.7

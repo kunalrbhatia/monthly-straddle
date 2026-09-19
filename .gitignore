@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.local
+logs/
+logs/*
+data/scrip_master.json
+data/tokens.json
+# Strategy reports decision (§2.8: keep reports gitignored by default unless explicitly made public)
+analysis/reports/
