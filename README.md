@@ -178,13 +178,13 @@ curl http://localhost:3000/health
 
 When enabled, the bot allows authenticated control from your specified `TELEGRAM_CHAT_ID`:
 
-| Command | Action |
-| --- | --- |
-| `/status` | View current mode (Paper/Live), switch states, and active position metrics |
-| `/kill` | Activate soft pause (`.kill`): blocks new entries, keeps SL/PT monitor active |
-| `/unkill` | Deactivate soft pause: resumes standard daily entry checks |
-| `/panic` | Activate hard stop (`.panic`): immediately squares off open position |
-| `/unpanic` | Deactivates hard stop mode |
+| Command    | Action                                                                        |
+| ---------- | ----------------------------------------------------------------------------- |
+| `/status`  | View current mode (Paper/Live), switch states, and active position metrics    |
+| `/kill`    | Activate soft pause (`.kill`): blocks new entries, keeps SL/PT monitor active |
+| `/unkill`  | Deactivate soft pause: resumes standard daily entry checks                    |
+| `/panic`   | Activate hard stop (`.panic`): immediately squares off open position          |
+| `/unpanic` | Deactivates hard stop mode                                                    |
 
 ---
 

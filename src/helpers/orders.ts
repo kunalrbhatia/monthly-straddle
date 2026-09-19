@@ -28,10 +28,14 @@ export interface OrderResponse {
  * §2.4: Non-idempotent order placement.
  * Order placement is EXCLUDED from generic auto-retry to prevent duplicate orders.
  */
-export async function placeOrder(order: OrderRequest): Promise<{ success: boolean; orderId: string; ltp: number }> {
+export async function placeOrder(
+  order: OrderRequest
+): Promise<{ success: boolean; orderId: string; ltp: number }> {
   if (modeManager.isPaper()) {
     const mockId = `PAPER_ORD_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    logger.info(`[PAPER ORDER] ${order.transactiontype} ${order.quantity} x ${order.tradingsymbol} -> ID: ${mockId}`);
+    logger.info(
+      `[PAPER ORDER] ${order.transactiontype} ${order.quantity} x ${order.tradingsymbol} -> ID: ${mockId}`
+    );
     return {
       success: true,
       orderId: mockId,
@@ -44,21 +48,23 @@ export async function placeOrder(order: OrderRequest): Promise<{ success: boolea
     throw new Error('Active session required to place orders.');
   }
 
-  logger.info(`Placing real order: ${order.transactiontype} ${order.quantity} of ${order.tradingsymbol}`);
+  logger.info(
+    `Placing real order: ${order.transactiontype} ${order.quantity} of ${order.tradingsymbol}`
+  );
 
   try {
     const res = await executeRequest(ANGEL_API_ENDPOINTS.ORDER_PLACE, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'X-UserType': 'USER',
         'X-SourceID': 'WEB',
         'X-ClientLocalIP': '127.0.0.1',
         'X-ClientPublicIP': '127.0.0.1',
         'X-MACAddress': 'fe80::1',
         'X-PrivateKey': env.API_KEY,
-        'Authorization': `Bearer ${session.jwtToken}`,
+        Authorization: `Bearer ${session.jwtToken}`,
       },
       data: order,
       isIdempotent: false, // Critical: §2.4 prevents blind auto-retries on mutations

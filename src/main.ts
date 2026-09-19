@@ -2,7 +2,12 @@ import cron from 'node-cron';
 import { env } from './config/env.js';
 import { createServer } from './server.js';
 import { loginAngelOne } from './helpers/login.js';
-import { fetchAndCacheScripMaster, loadCachedScrips, extractLotSizes, verifyLotSizeOrBlock } from './helpers/scripMaster.js';
+import {
+  fetchAndCacheScripMaster,
+  loadCachedScrips,
+  extractLotSizes,
+  verifyLotSizeOrBlock,
+} from './helpers/scripMaster.js';
 import { modeManager } from './helpers/modeManager.js';
 import { runDailyJob } from './jobs/dailyEntryJob.js';
 import { generateDailyReport } from '../analysis/generateReport.js';
@@ -57,35 +62,49 @@ async function bootstrap() {
   }
 
   // Morning Scrip Master Refresh Cron at 08:30 IST
-  cron.schedule('30 8 * * 1-5', async () => {
-    logger.info('08:30 IST: Running morning scrip master sync and lot size reconciliation...');
-    try {
-      const scrips = await fetchAndCacheScripMaster();
-      const lotSizes = extractLotSizes(scrips, ['NIFTY']);
-      const derivedLot = lotSizes['NIFTY'] || 65;
-      verifyLotSizeOrBlock('NIFTY', derivedLot, env.LOT_SIZE);
-    } catch (err: any) {
-      logger.error(`Morning scrip refresh failed: ${err.message}`);
+  cron.schedule(
+    '30 8 * * 1-5',
+    async () => {
+      logger.info('08:30 IST: Running morning scrip master sync and lot size reconciliation...');
+      try {
+        const scrips = await fetchAndCacheScripMaster();
+        const lotSizes = extractLotSizes(scrips, ['NIFTY']);
+        const derivedLot = lotSizes['NIFTY'] || 65;
+        verifyLotSizeOrBlock('NIFTY', derivedLot, env.LOT_SIZE);
+      } catch (err: any) {
+        logger.error(`Morning scrip refresh failed: ${err.message}`);
+      }
+    },
+    {
+      timezone: 'Asia/Kolkata',
     }
-  }, {
-    timezone: 'Asia/Kolkata'
-  });
+  );
 
   // Daily Entry & 21-DTE Check Job at 15:00 IST (§1.3.2)
-  cron.schedule(`${env.ENTRY_JOB_MINUTE} ${env.ENTRY_JOB_HOUR} * * 1-5`, async () => {
-    logger.info(`Running scheduled entry/21-DTE job at ${env.ENTRY_JOB_HOUR}:${env.ENTRY_JOB_MINUTE} IST...`);
-    await runDailyJob();
-  }, {
-    timezone: 'Asia/Kolkata'
-  });
+  cron.schedule(
+    `${env.ENTRY_JOB_MINUTE} ${env.ENTRY_JOB_HOUR} * * 1-5`,
+    async () => {
+      logger.info(
+        `Running scheduled entry/21-DTE job at ${env.ENTRY_JOB_HOUR}:${env.ENTRY_JOB_MINUTE} IST...`
+      );
+      await runDailyJob();
+    },
+    {
+      timezone: 'Asia/Kolkata',
+    }
+  );
 
   // Daily Report Generation at 15:40 IST (§1.8)
-  cron.schedule(`${env.REPORT_MINUTE} ${env.REPORT_HOUR} * * 1-5`, async () => {
-    logger.info(`Running 15:40 IST daily trade report generator...`);
-    generateDailyReport(new Date());
-  }, {
-    timezone: 'Asia/Kolkata'
-  });
+  cron.schedule(
+    `${env.REPORT_MINUTE} ${env.REPORT_HOUR} * * 1-5`,
+    async () => {
+      logger.info(`Running 15:40 IST daily trade report generator...`);
+      generateDailyReport(new Date());
+    },
+    {
+      timezone: 'Asia/Kolkata',
+    }
+  );
 
   logger.info('Algo Trading Engine initialized and cron schedules registered.');
 }

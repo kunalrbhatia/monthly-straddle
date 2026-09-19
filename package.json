@@ -6,9 +6,12 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "dev": "tsx watch src/main.ts",
     "test": "jest",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "smoke-report": "tsx analysis/generateReport.ts --fixture"
   },
   "dependencies": {
@@ -25,14 +28,18 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.4",
     "@types/node-cron": "^3.0.11",
     "@types/ws": "^8.5.14",
+    "eslint": "^10.11.0",
     "jest": "^29.7.0",
+    "prettier": "^3.9.8",
     "ts-jest": "^29.2.5",
     "tsx": "^4.19.3",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.70.0"
   }
 }

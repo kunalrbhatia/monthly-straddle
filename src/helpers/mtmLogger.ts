@@ -43,6 +43,15 @@ export function appendMtmLog(
   const dateStr = getISTDateString(date);
   const logFilePath = path.resolve(mtmDir, `mtm-NIFTY-${dateStr}.log`);
 
-  const line = formatMtmLogLine(date, strike, ceLTP, peLTP, entryPremiumRupees, lotSize, slAmount, ptAmount);
+  const line = formatMtmLogLine(
+    date,
+    strike,
+    ceLTP,
+    peLTP,
+    entryPremiumRupees,
+    lotSize,
+    slAmount,
+    ptAmount
+  );
   fs.appendFileSync(logFilePath, line + '\n', 'utf-8');
 }

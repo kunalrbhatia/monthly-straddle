@@ -59,7 +59,9 @@ export function initTelegramBot(): void {
   // Soft pause (§2.3)
   bot.command('kill', async (ctx) => {
     modeManager.setKill(true);
-    await ctx.reply('🛑 Soft pause (.kill) enabled. New entries are blocked. Live positions remain protected.');
+    await ctx.reply(
+      '🛑 Soft pause (.kill) enabled. New entries are blocked. Live positions remain protected.'
+    );
   });
 
   bot.command('unkill', async (ctx) => {
@@ -70,7 +72,9 @@ export function initTelegramBot(): void {
   // Hard stop (§2.3 - panic exit)
   bot.command('panic', async (ctx) => {
     modeManager.setPanic(true);
-    await ctx.reply('🚨🚨 PANIC triggered! Halting everything and closing active position immediately...');
+    await ctx.reply(
+      '🚨🚨 PANIC triggered! Halting everything and closing active position immediately...'
+    );
     const pos = niftyPositionStore.getPosition();
     if (pos && pos.status === 'OPEN') {
       await exitStraddlePosition('PANIC', pos.ceLeg.currentLTP || 0, pos.peLeg.currentLTP || 0);
@@ -82,9 +86,12 @@ export function initTelegramBot(): void {
     await ctx.reply('✅ PANIC mode cleared.');
   });
 
-  bot.launch().then(() => {
-    logger.info('Telegram bot polling started successfully.');
-  }).catch((err) => {
-    logger.error(`Telegram bot launch error: ${err.message}`);
-  });
+  bot
+    .launch()
+    .then(() => {
+      logger.info('Telegram bot polling started successfully.');
+    })
+    .catch((err) => {
+      logger.error(`Telegram bot launch error: ${err.message}`);
+    });
 }

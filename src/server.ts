@@ -16,12 +16,14 @@ export function createServer() {
         kill: modeManager.isKill(),
         panic: modeManager.isPanic(),
       },
-      position: pos ? {
-        status: pos.status,
-        strike: pos.strike,
-        expiry: pos.expiryDate,
-        entryPremium: pos.entryPremiumRupees,
-      } : null,
+      position: pos
+        ? {
+            status: pos.status,
+            strike: pos.strike,
+            expiry: pos.expiryDate,
+            entryPremium: pos.entryPremiumRupees,
+          }
+        : null,
     });
   });
 

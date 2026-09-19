@@ -37,7 +37,7 @@ export async function loginAngelOne(): Promise<UserSession> {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       'X-UserType': 'USER',
       'X-SourceID': 'WEB',
       'X-ClientLocalIP': '127.0.0.1',

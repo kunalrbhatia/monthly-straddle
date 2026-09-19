@@ -43,7 +43,10 @@ export async function executeRequest<T = any>(
       }
 
       if (isLastAttempt) {
-        sendAlert(`🚨 API request failed after ${maxRetries} retries: ${url} (${error.message})`, true);
+        sendAlert(
+          `🚨 API request failed after ${maxRetries} retries: ${url} (${error.message})`,
+          true
+        );
         throw error;
       }
 

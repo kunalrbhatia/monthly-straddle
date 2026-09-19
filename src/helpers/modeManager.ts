@@ -26,7 +26,9 @@ export class ModeManager {
   public setKill(enable: boolean): void {
     if (enable) {
       fs.writeFileSync(this.killPath, 'KILL_ACTIVE');
-      sendAlert('🛑 Soft pause (.kill) ACTIVATED. New entries paused. Active positions remain monitored.');
+      sendAlert(
+        '🛑 Soft pause (.kill) ACTIVATED. New entries paused. Active positions remain monitored.'
+      );
     } else {
       if (fs.existsSync(this.killPath)) fs.unlinkSync(this.killPath);
       sendAlert('▶️ Soft pause (.kill) DEACTIVATED. New entries resumed.');
@@ -41,7 +43,10 @@ export class ModeManager {
   public setPanic(enable: boolean): void {
     if (enable) {
       fs.writeFileSync(this.panicPath, 'PANIC_ACTIVE');
-      sendAlert('🚨🚨 HARD STOP (.panic) ACTIVATED! All operations halting, positions will force-close immediately!', true);
+      sendAlert(
+        '🚨🚨 HARD STOP (.panic) ACTIVATED! All operations halting, positions will force-close immediately!',
+        true
+      );
     } else {
       if (fs.existsSync(this.panicPath)) fs.unlinkSync(this.panicPath);
       sendAlert('✅ HARD STOP (.panic) CLEARED.');

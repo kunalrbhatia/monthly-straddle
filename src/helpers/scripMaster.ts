@@ -57,7 +57,10 @@ export function loadCachedScrips(): ScripItem[] {
 /**
  * §2.10: Aggregate lot sizes across ALL matching contract rows — never overwrite with the last one seen.
  */
-export function extractLotSizes(instruments: ScripItem[], targetIndices: string[]): Record<string, number> {
+export function extractLotSizes(
+  instruments: ScripItem[],
+  targetIndices: string[]
+): Record<string, number> {
   const freq: Record<string, Record<number, number>> = {};
 
   for (const item of instruments) {
@@ -116,7 +119,10 @@ export function verifyLotSizeOrBlock(
  * Resolves monthly expirations for NIFTY.
  * Monthly expiry is the last expiry date of that calendar month.
  */
-export function resolveMonthlyExpiries(instruments: ScripItem[], symbol: string = 'NIFTY'): string[] {
+export function resolveMonthlyExpiries(
+  instruments: ScripItem[],
+  symbol: string = 'NIFTY'
+): string[] {
   const expirySet = new Set<string>();
 
   instruments.forEach((item) => {

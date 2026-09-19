@@ -56,13 +56,7 @@ export async function exitStraddlePosition(
   const exitPremiumRupees = (ceExitLTP + peExitLTP) * pos.lotSize;
   const realizedPnL = pos.entryPremiumRupees - exitPremiumRupees;
 
-  niftyPositionStore.closePosition(
-    reason,
-    ceExitLTP,
-    peExitLTP,
-    realizedPnL,
-    getISTTimestamp()
-  );
+  niftyPositionStore.closePosition(reason, ceExitLTP, peExitLTP, realizedPnL, getISTTimestamp());
 
   const emoji = realizedPnL >= 0 ? '🎉' : '⚠️';
   const alertMsg = `${emoji} NIFTY straddle exited (${reason})!\nRealized P&L: ₹${realizedPnL.toFixed(2)}\nCE Exit LTP: ${ceExitLTP}\nPE Exit LTP: ${peExitLTP}`;
@@ -75,7 +69,10 @@ export async function exitStraddlePosition(
 /**
  * Evaluates live continuous SL/PT conditions (§1.3, §1.7)
  */
-export async function evaluateExitConditions(currentCeLTP: number, currentPeLTP: number): Promise<void> {
+export async function evaluateExitConditions(
+  currentCeLTP: number,
+  currentPeLTP: number
+): Promise<void> {
   // Hard stop check (§2.3)
   if (modeManager.isPanic()) {
     logger.warn('Panic mode triggered -> exiting position immediately.');
@@ -91,14 +88,18 @@ export async function evaluateExitConditions(currentCeLTP: number, currentPeLTP:
 
   // Stop-loss check: unrealizedLossRupees >= slAmount
   if (-unrealizedPnL >= pos.slAmount) {
-    logger.warn(`Stop Loss breached! Unrealized Loss: ₹${(-unrealizedPnL).toFixed(2)} >= SL: ₹${pos.slAmount}`);
+    logger.warn(
+      `Stop Loss breached! Unrealized Loss: ₹${(-unrealizedPnL).toFixed(2)} >= SL: ₹${pos.slAmount}`
+    );
     await exitStraddlePosition('SL', currentCeLTP, currentPeLTP);
     return;
   }
 
   // Profit target check: unrealizedProfitRupees >= ptAmount
   if (unrealizedPnL >= pos.ptAmount) {
-    logger.info(`Profit Target hit! Unrealized Profit: ₹${unrealizedPnL.toFixed(2)} >= PT: ₹${pos.ptAmount}`);
+    logger.info(
+      `Profit Target hit! Unrealized Profit: ₹${unrealizedPnL.toFixed(2)} >= PT: ₹${pos.ptAmount}`
+    );
     await exitStraddlePosition('PT', currentCeLTP, currentPeLTP);
     return;
   }

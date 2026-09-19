@@ -5,6 +5,8 @@ export default {
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
+  testMatch: ['<rootDir>/tests/**/*.test.ts'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',

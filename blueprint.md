@@ -17,14 +17,14 @@ _A reusable blueprint for building expiry/options/equity trading algos on Angel 
   3. If DTE >= 42 (see rounding/holiday note below) -> run the entry sequence and sell the straddle.
   4. If DTE > 45 -> do nothing, exit the job.
 - **Expiry resolution:** Always the **monthly** NIFTY expiry (resolve dynamically from the scrip master, never hardcode the expiry weekday). DTE is calculated in **calendar days** from "today" (the 15:00 run date) to that expiry date.
-- **One trade per cycle:** Only one straddle is ever open at a time. After an exit (SL, PT, or 21-DTE), no re-entry into the same expiry - the next entry is evaluated against the *next* monthly expiry's 45-DTE date, following the same daily check.
+- **One trade per cycle:** Only one straddle is ever open at a time. After an exit (SL, PT, or 21-DTE), no re-entry into the same expiry - the next entry is evaluated against the _next_ monthly expiry's 45-DTE date, following the same daily check.
 
 ### Position structure (2 legs)
 
-| Leg | Expiry | Side | Qty | Strike selection |
-| --- | ------ | ---- | --- | ----------------- |
+| Leg | Expiry          | Side | Qty                                                                   | Strike selection             |
+| --- | --------------- | ---- | --------------------------------------------------------------------- | ---------------------------- |
 | CE  | Current monthly | SELL | 1 lot (`LOT_SIZE`, env-configurable, default 65 - verified per §2.10) | See "Strike selection" below |
-| PE  | Current monthly | SELL | 1 lot (`LOT_SIZE`, env-configurable, default 65 - verified per §2.10) | Same strike as CE |
+| PE  | Current monthly | SELL | 1 lot (`LOT_SIZE`, env-configurable, default 65 - verified per §2.10) | Same strike as CE            |
 
 There are no hedge legs and no ratio structure - this is a pure undefined-risk short straddle. Both legs are always entered together, same strike, same expiry (see §1.2 for partial-fill handling).
 
@@ -42,6 +42,7 @@ At entry time (15:00 IST, on a confirmed 45-DTE day):
 5. Compare `spotDiff` vs `futDiff`. Sell the CE+PE pair at whichever strike produced the **smaller** difference. On an exact tie, default to `spotATM` (documented, deterministic tie-break).
 
 **Worked example (matches the numbers given):**
+
 - Spot = 24000 -> `spotATM` = 24000. CE = 70, PE = 30 -> `spotDiff` = 20.
 - Future = 24200 -> `futATM` = 24200. CE = 55, PE = 45 -> `futDiff` = 10.
 - `futDiff` (10) < `spotDiff` (20) -> sell 24200 CE + 24200 PE.
@@ -49,7 +50,10 @@ At entry time (15:00 IST, on a confirmed 45-DTE day):
 ### Strike rounding
 
 ```javascript
-function roundToNearestStrikeInterval(price, interval /* e.g. 50 for NIFTY - verify against scrip master, don't hardcode */) {
+function roundToNearestStrikeInterval(
+  price,
+  interval /* e.g. 50 for NIFTY - verify against scrip master, don't hardcode */
+) {
   return Math.round(price / interval) * interval;
 }
 ```
@@ -109,13 +113,14 @@ slAmount  = entryPremiumRupees            // 100% of premium received - full los
 ptAmount  = entryPremiumRupees * 0.5      // 50% of premium received
 ```
 
-| Condition | Action |
-| --- | --- |
-| `unrealizedLossRupees >= slAmount` | Exit both legs immediately (market/limit-with-fallback per §2.4) - stop-loss hit |
-| `unrealizedProfitRupees >= ptAmount` | Exit both legs immediately - profit target hit |
-| Neither triggered by 21 DTE (or nearest prior trading day, §1.3.1) at 15:00 IST | Exit both legs at whatever P&L stands - time-based exit |
+| Condition                                                                       | Action                                                                           |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `unrealizedLossRupees >= slAmount`                                              | Exit both legs immediately (market/limit-with-fallback per §2.4) - stop-loss hit |
+| `unrealizedProfitRupees >= ptAmount`                                            | Exit both legs immediately - profit target hit                                   |
+| Neither triggered by 21 DTE (or nearest prior trading day, §1.3.1) at 15:00 IST | Exit both legs at whatever P&L stands - time-based exit                          |
 
 **Worked example (matches the numbers given):**
+
 - Entry combined premium = `(ceEntry + peEntry)` points x `LOT_SIZE`.
 - SL = 100% of that Rs figure (full premium given back).
 - PT = 50% of that Rs figure.
@@ -148,18 +153,18 @@ ptAmount  = entryPremiumRupees * 0.5      // 50% of premium received
 - If that date is a market holiday, exit on the **previous trading day** (e.g. 21 DTE falls on a holiday -> exit on 20 DTE), never the next trading day - the intent is "no later than 21 DTE."
 - Exit executes at **15:00 IST** on that (adjusted) day, using whatever unrealized P&L stands at that time, unless SL or PT has already triggered intraday before then.
 
-| Position status at 15:00 IST on 21-DTE (or adjusted) day | Action |
-| --- | --- |
-| Still open (neither SL nor PT triggered) | Exit both legs at market/limit-with-fallback, log reason `21DTE` |
-| Already closed earlier (SL or PT already triggered) | No-op - nothing to do, position already closed |
+| Position status at 15:00 IST on 21-DTE (or adjusted) day | Action                                                           |
+| -------------------------------------------------------- | ---------------------------------------------------------------- |
+| Still open (neither SL nor PT triggered)                 | Exit both legs at market/limit-with-fallback, log reason `21DTE` |
+| Already closed earlier (SL or PT already triggered)      | No-op - nothing to do, position already closed                   |
 
 #### §1.3.2 Scheduled job times (IST)
 
-| Time | Job | Details |
-| --- | --- | --- |
-| 15:00 | Daily entry/DTE-check job | No open position -> check 45-DTE entry; open position -> check 21-DTE hard exit |
-| Continuous (market hours) | WebSocket MTM monitor | Evaluates SL/PT on every tick while a position is open (§1.7) |
-| 15:40 | Daily report (if a trade closed or is open that day) | Reads from `logs/mtm/` append-only log |
+| Time                      | Job                                                  | Details                                                                         |
+| ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
+| 15:00                     | Daily entry/DTE-check job                            | No open position -> check 45-DTE entry; open position -> check 21-DTE hard exit |
+| Continuous (market hours) | WebSocket MTM monitor                                | Evaluates SL/PT on every tick while a position is open (§1.7)                   |
+| 15:40                     | Daily report (if a trade closed or is open that day) | Reads from `logs/mtm/` append-only log                                          |
 
 ### §1.4 Instrument scope & future expansion
 
@@ -192,12 +197,12 @@ ptAmount  = entryPremiumRupees * 0.5      // 50% of premium received
 {ISO8601 IST timestamp} | NIFTY | strike={strike} | ceLTP={ceLTP} | peLTP={peLTP} | combinedPremium={combinedPremium} | unrealizedPnL={unrealizedPnL} | pctOfSL={pctOfSL} | pctOfPT={pctOfPT}
 ```
 
-| Field | Rule |
-| --- | --- |
-| `combinedPremium` | `(ceLTP + peLTP) * LOT_SIZE`, rupees |
-| `unrealizedPnL` | `entryPremiumRupees - combinedPremium` |
-| `pctOfSL` | `max(0, -unrealizedPnL) / slAmount * 100`, for at-a-glance risk monitoring |
-| `pctOfPT` | `max(0, unrealizedPnL) / ptAmount * 100` |
+| Field             | Rule                                                                       |
+| ----------------- | -------------------------------------------------------------------------- |
+| `combinedPremium` | `(ceLTP + peLTP) * LOT_SIZE`, rupees                                       |
+| `unrealizedPnL`   | `entryPremiumRupees - combinedPremium`                                     |
+| `pctOfSL`         | `max(0, -unrealizedPnL) / slAmount * 100`, for at-a-glance risk monitoring |
+| `pctOfPT`         | `max(0, unrealizedPnL) / ptAmount * 100`                                   |
 
 #### When to write
 
@@ -213,10 +218,12 @@ ptAmount  = entryPremiumRupees * 0.5      // 50% of premium received
 function formatMtmLogLine(date, ceLTP, peLTP, entryPremiumRupees, lotSize, slAmount, ptAmount) {
   const combinedPremium = (ceLTP + peLTP) * lotSize;
   const unrealizedPnL = entryPremiumRupees - combinedPremium;
-  const pctOfSL = Math.max(0, -unrealizedPnL) / slAmount * 100;
-  const pctOfPT = Math.max(0, unrealizedPnL) / ptAmount * 100;
+  const pctOfSL = (Math.max(0, -unrealizedPnL) / slAmount) * 100;
+  const pctOfPT = (Math.max(0, unrealizedPnL) / ptAmount) * 100;
   const ts = new Intl.DateTimeFormat('en-IN', {
-    timeZone: 'Asia/Kolkata', dateStyle: 'short', timeStyle: 'medium',
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'short',
+    timeStyle: 'medium',
   }).format(date);
   return `${ts} | NIFTY | ceLTP=${ceLTP} | peLTP=${peLTP} | combinedPremium=${combinedPremium} | unrealizedPnL=${unrealizedPnL} | pctOfSL=${pctOfSL.toFixed(1)} | pctOfPT=${pctOfPT.toFixed(1)}`;
 }

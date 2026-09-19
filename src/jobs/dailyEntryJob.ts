@@ -7,15 +7,8 @@ import {
   resolveMonthlyExpiries,
   ScripItem,
 } from '../helpers/scripMaster.js';
-import {
-  isTradingDay,
-  calculateDTE,
-  getAdjusted21DteDate,
-} from '../helpers/holidayCheck.js';
-import {
-  fetchLTP,
-  roundToNearestStrikeInterval,
-} from '../helpers/marketData.js';
+import { isTradingDay, calculateDTE, getAdjusted21DteDate } from '../helpers/holidayCheck.js';
+import { fetchLTP, roundToNearestStrikeInterval } from '../helpers/marketData.js';
 import { placeOrder } from '../helpers/orders.js';
 import { modeManager } from '../helpers/modeManager.js';
 import { INDEX_CONFIGS } from '../helpers/constants.js';
@@ -47,7 +40,9 @@ export async function runDailyJob(): Promise<void> {
   // Step 1: Check existing position
   const openPosition = niftyPositionStore.getPosition();
   if (openPosition && openPosition.status === 'OPEN') {
-    logger.info('Open position detected. Skipping entry evaluation, proceeding to 21-DTE hard-exit check.');
+    logger.info(
+      'Open position detected. Skipping entry evaluation, proceeding to 21-DTE hard-exit check.'
+    );
 
     const todayStr = getISTDateString(today);
     if (todayStr === openPosition.dte21Date) {
@@ -56,7 +51,9 @@ export async function runDailyJob(): Promise<void> {
       const peLTP = await fetchLTP('NFO', openPosition.peLeg.symbol, openPosition.peLeg.token);
       await exitStraddlePosition('21DTE', ceLTP, peLTP);
     } else {
-      logger.info(`Open position DTE-21 date is ${openPosition.dte21Date}. Position continues monitoring.`);
+      logger.info(
+        `Open position DTE-21 date is ${openPosition.dte21Date}. Position continues monitoring.`
+      );
     }
     return;
   }
@@ -79,7 +76,9 @@ export async function runDailyJob(): Promise<void> {
 
   const lotValid = verifyLotSizeOrBlock('NIFTY', derivedLotSize, configuredLotSize);
   if (!lotValid) {
-    logger.error(`Entry blocked due to lot size discrepancy (scrip: ${derivedLotSize}, config: ${configuredLotSize}).`);
+    logger.error(
+      `Entry blocked due to lot size discrepancy (scrip: ${derivedLotSize}, config: ${configuredLotSize}).`
+    );
     return;
   }
 
@@ -107,7 +106,9 @@ export async function runDailyJob(): Promise<void> {
   logger.info(`Candidate monthly expiry: ${candidateExpiryStr}, DTE: ${candidateDTE}`);
 
   if (candidateDTE !== env.TARGET_DTE) {
-    logger.info(`DTE is ${candidateDTE} (target is ${env.TARGET_DTE}). No entry action required today.`);
+    logger.info(
+      `DTE is ${candidateDTE} (target is ${env.TARGET_DTE}). No entry action required today.`
+    );
     return;
   }
 
@@ -115,7 +116,11 @@ export async function runDailyJob(): Promise<void> {
   logger.info(`🎯 Confirmed ${env.TARGET_DTE}-DTE day! Commencing dual-ATM strike resolution.`);
 
   // 1. Fetch spot LTP and future LTP
-  const spotLTP = await fetchLTP('NSE', INDEX_CONFIGS.NIFTY.spotSymbol, INDEX_CONFIGS.NIFTY.spotToken);
+  const spotLTP = await fetchLTP(
+    'NSE',
+    INDEX_CONFIGS.NIFTY.spotSymbol,
+    INDEX_CONFIGS.NIFTY.spotToken
+  );
 
   // Find current monthly future contract in scrip master
   const futContract = scrips.find(
@@ -187,10 +192,14 @@ export async function runDailyJob(): Promise<void> {
 
     if (futDiff < spotDiff) {
       selectedStrike = futATM;
-      logger.info(`futDiff (${futDiff}) < spotDiff (${spotDiff}) -> Selected futATM: ${selectedStrike}`);
+      logger.info(
+        `futDiff (${futDiff}) < spotDiff (${spotDiff}) -> Selected futATM: ${selectedStrike}`
+      );
     } else {
       selectedStrike = spotATM; // Default or tie-break
-      logger.info(`spotDiff (${spotDiff}) <= futDiff (${futDiff}) -> Selected spotATM: ${selectedStrike}`);
+      logger.info(
+        `spotDiff (${spotDiff}) <= futDiff (${futDiff}) -> Selected spotATM: ${selectedStrike}`
+      );
     }
   }
 

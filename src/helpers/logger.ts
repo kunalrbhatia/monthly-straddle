@@ -35,7 +35,7 @@ const mtmDir = path.resolve(logsDir, 'mtm');
 if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 if (!fs.existsSync(mtmDir)) fs.mkdirSync(mtmDir, { recursive: true });
 
-const logFormat = winston.format.printf(({ level, message, timestamp }) => {
+const logFormat = winston.format.printf(({ level, message, timestamp: _timestamp }) => {
   return `[${getISTTimestamp()}] [${level.toUpperCase()}]: ${message}`;
 });
 
