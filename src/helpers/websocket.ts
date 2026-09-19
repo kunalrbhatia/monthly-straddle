@@ -40,7 +40,7 @@ class WebSocketManager {
     try {
       this.ws = new WebSocket(wsUrl, {
         headers: {
-          'Authorization': `Bearer ${session.jwtToken}`,
+          Authorization: `Bearer ${session.jwtToken}`,
           'x-api-key': process.env.API_KEY || '',
           'x-client-code': session.userId,
           'x-feed-token': session.feedToken,

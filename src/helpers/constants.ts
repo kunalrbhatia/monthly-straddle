@@ -17,11 +17,12 @@ export const INDEX_CONFIGS: Record<string, IndexConfig> = {
     spotToken: '99926000', // NSE Cash index token for Nifty 50
     defaultLotSize: 65,
     strikeInterval: 50,
-  }
+  },
 };
 
 export const ANGEL_API_ENDPOINTS = {
-  SCRIP_MASTER: 'https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json',
+  SCRIP_MASTER:
+    'https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json',
   LOGIN: 'https://apiconnect.angelone.in/rest/auth/angelbroking/user/v1/loginByPassword',
   GENERATE_TOKEN: 'https://apiconnect.angelone.in/rest/auth/angelbroking/jwt/v1/generateTokens',
   PROFILE: 'https://apiconnect.angelone.in/rest/secure/angelbroking/user/v1/getProfile',

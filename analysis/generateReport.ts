@@ -42,16 +42,23 @@ export function parseMtmLine(line: string): ParsedMtmLine | null {
   };
 }
 
-export function generateDailyReport(date: Date = new Date(), fixtureFilePath?: string): string | null {
+export function generateDailyReport(
+  date: Date = new Date(),
+  fixtureFilePath?: string
+): string | null {
   const dateStr = getISTDateString(date);
-  const mtmFilePath = fixtureFilePath || path.resolve(process.cwd(), 'logs', 'mtm', `mtm-NIFTY-${dateStr}.log`);
+  const mtmFilePath =
+    fixtureFilePath || path.resolve(process.cwd(), 'logs', 'mtm', `mtm-NIFTY-${dateStr}.log`);
 
   if (!fs.existsSync(mtmFilePath)) {
     logger.info(`No MTM log found at ${mtmFilePath}. Skipping daily report generation.`);
     return null;
   }
 
-  const rawLines = fs.readFileSync(mtmFilePath, 'utf-8').split('\n').filter((l) => l.trim().length > 0);
+  const rawLines = fs
+    .readFileSync(mtmFilePath, 'utf-8')
+    .split('\n')
+    .filter((l) => l.trim().length > 0);
   if (rawLines.length === 0) {
     logger.info('MTM log file is empty. Skipping daily report.');
     return null;
@@ -123,6 +130,8 @@ _Generated automatically at 15:40 IST based on \`${path.basename(mtmFilePath)}\`
 // Allow direct CLI invocation or CI smoke test
 if (process.argv.includes('--run') || process.argv.includes('--fixture')) {
   const isFixture = process.argv.includes('--fixture');
-  const fixturePath = isFixture ? path.resolve(process.cwd(), 'tests', 'fixtures', 'fixture-mtm.log') : undefined;
+  const fixturePath = isFixture
+    ? path.resolve(process.cwd(), 'tests', 'fixtures', 'fixture-mtm.log')
+    : undefined;
   generateDailyReport(new Date(), fixturePath);
 }

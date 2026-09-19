@@ -3,7 +3,6 @@ import fs from 'fs';
 import { roundToNearestStrikeInterval } from '../src/helpers/marketData.js';
 import { extractLotSizes } from '../src/helpers/scripMaster.js';
 import { calculateDTE, getAdjusted21DteDate, isTradingDay } from '../src/helpers/holidayCheck.js';
-import { formatMtmLogLine } from '../src/helpers/mtmLogger.js';
 import { parseMtmLine, generateDailyReport } from '../analysis/generateReport.js';
 
 describe('Strategy Core Math & Engineering Rules', () => {
@@ -18,7 +17,7 @@ describe('Strategy Core Math & Engineering Rules', () => {
       { exch_seg: 'NFO', instrumenttype: 'OPTIDX', name: 'NIFTY', lotsize: '65' },
       { exch_seg: 'NFO', instrumenttype: 'OPTIDX', name: 'NIFTY', lotsize: '65' },
       { exch_seg: 'NFO', instrumenttype: 'OPTIDX', name: 'NIFTY', lotsize: '75' }, // stray row
-      { exch_seg: 'NFO', instrumenttype: 'OPTIDX', name: 'NIFTY', lotsize: '0' },  // invalid row
+      { exch_seg: 'NFO', instrumenttype: 'OPTIDX', name: 'NIFTY', lotsize: '0' }, // invalid row
       { exch_seg: 'NSE', instrumenttype: 'EQ', name: 'RELIANCE', lotsize: '1' },
     ];
 
@@ -42,7 +41,8 @@ describe('Strategy Core Math & Engineering Rules', () => {
   });
 
   test('§1.7 MTM format line parsing', () => {
-    const line = '01/10/2026, 15:30:00 | NIFTY | strike=24500 | ceLTP=120.00 | peLTP=125.00 | combinedPremium=15925.00 | unrealizedPnL=3575.00 | pctOfSL=0.0 | pctOfPT=36.7';
+    const line =
+      '01/10/2026, 15:30:00 | NIFTY | strike=24500 | ceLTP=120.00 | peLTP=125.00 | combinedPremium=15925.00 | unrealizedPnL=3575.00 | pctOfSL=0.0 | pctOfPT=36.7';
     const parsed = parseMtmLine(line);
     expect(parsed).not.toBeNull();
     expect(parsed?.strike).toBe('24500');

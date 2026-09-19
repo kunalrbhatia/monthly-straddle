@@ -24,9 +24,9 @@ export interface PositionState {
   ceLeg: PositionLeg;
   peLeg: PositionLeg;
   entryPremiumRupees: number; // Immutable: (ceEntryLTP + peEntryLTP) * lotSize per §1.3
-  slAmount: number;           // 100% of entry premium received
-  ptAmount: number;           // 50% of entry premium received
-  dte21Date: string;          // YYYY-MM-DD
+  slAmount: number; // 100% of entry premium received
+  ptAmount: number; // 50% of entry premium received
+  dte21Date: string; // YYYY-MM-DD
   exitTimestamp?: string;
   exitReason?: 'SL' | 'PT' | '21DTE' | 'PANIC' | 'PARTIAL_ABORT';
   realizedPnL?: number;

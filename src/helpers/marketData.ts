@@ -34,14 +34,14 @@ export async function fetchLTP(exchange: string, symbol: string, token: string):
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'X-UserType': 'USER',
         'X-SourceID': 'WEB',
         'X-ClientLocalIP': '127.0.0.1',
         'X-ClientPublicIP': '127.0.0.1',
         'X-MACAddress': 'fe80::1',
         'X-PrivateKey': env.API_KEY,
-        'Authorization': `Bearer ${session.jwtToken}`,
+        Authorization: `Bearer ${session.jwtToken}`,
       },
       data: {
         mode: 'LTP',
