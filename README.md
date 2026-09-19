@@ -145,6 +145,8 @@ REPORT_MINUTE=40
 PAPER_MODE=true
 ```
 
+> **Note on boolean flags** (`USE_TELEGRAM`, `USE_SLACK`, `PAPER_MODE`): values are parsed explicitly, so `false` correctly disables the flag. Accepted truthy values are `true` / `1` / `yes` / `on`; falsy are `false` / `0` / `no` / `off` (case-insensitive).
+
 ---
 
 ## Running the Engine
