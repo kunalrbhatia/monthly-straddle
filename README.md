@@ -13,8 +13,8 @@ An algorithmic options trading engine built on Node.js, TypeScript, and Angel On
   1. Checks local store for an open position (if open, proceeds directly to exit/monitoring).
   2. Resolves current monthly expiry dynamically from Angel One scrip master.
   3. Computes calendar-day DTE from today to monthly expiry.
-  4. If `DTE === 45`, evaluates the **dual-ATM premium-symmetry check** and enters.
-  5. If `DTE !== 45`, no action is taken.
+  4. If `DTE` falls within `TARGET_DTE ± ENTRY_DTE_WINDOW`, it anchors the entry to the nearest **previous trading day** for that target DTE (a Tuesday monthly expiry minus 45 days is always a Saturday) and enters on the first trading day on/after that anchor.
+  5. If no monthly expiry is within the window, or the anchor date has not been reached yet, no action is taken.
 - **Strike Selection (Dual-ATM Symmetry Check):**
   - Fetches Spot LTP and Current-Month Future LTP.
   - Rounds both to nearest strike interval (50).
@@ -135,6 +135,7 @@ SLACK_WEBHOOK_URL=
 # Strategy Parameters
 LOT_SIZE=65
 TARGET_DTE=45
+ENTRY_DTE_WINDOW=3
 HARD_EXIT_DTE=21
 PT_PCT_OF_PREMIUM=50
 SL_PCT_OF_PREMIUM=100

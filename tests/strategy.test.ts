@@ -2,7 +2,12 @@ import path from 'path';
 import fs from 'fs';
 import { roundToNearestStrikeInterval } from '../src/helpers/marketData.js';
 import { extractLotSizes } from '../src/helpers/scripMaster.js';
-import { calculateDTE, getAdjusted21DteDate, isTradingDay } from '../src/helpers/holidayCheck.js';
+import {
+  calculateDTE,
+  getAdjusted21DteDate,
+  getAdjustedTargetDteDate,
+  isTradingDay,
+} from '../src/helpers/holidayCheck.js';
 import { parseMtmLine, generateDailyReport } from '../analysis/generateReport.js';
 
 describe('Strategy Core Math & Engineering Rules', () => {
@@ -38,6 +43,22 @@ describe('Strategy Core Math & Engineering Rules', () => {
     expect(isTradingDay(adjusted21)).toBe(true);
     // Adjusted date must be strictly <= 21 days from expiry
     expect(calculateDTE(adjusted21, expiry)).toBeGreaterThanOrEqual(21);
+  });
+
+  test('§1.3.2 45-DTE entry anchor rolls back off the weekend (regression)', () => {
+    // A NIFTY monthly expiry is a Tuesday; Tuesday - 45 days is ALWAYS a Saturday,
+    // so the raw target date is never a trading day and the entry could never fire.
+    const expiry = new Date('2026-08-25T10:00:00.000Z'); // Tuesday monthly expiry
+    const rawTarget = new Date('2026-07-11T10:00:00.000Z');
+    expect(isTradingDay(rawTarget)).toBe(false); // Saturday -> not tradable
+
+    const adjusted = getAdjustedTargetDteDate(expiry, 45);
+    expect(isTradingDay(adjusted)).toBe(true);
+    // Rolls BACKWARDS (never forward) and stays >= TARGET_DTE days from expiry
+    expect(calculateDTE(adjusted, expiry)).toBeGreaterThanOrEqual(45);
+    expect(adjusted.getTime()).toBeLessThanOrEqual(rawTarget.getTime());
+    // Nearest previous trading day must be Friday 2026-07-10
+    expect(adjusted.toISOString().slice(0, 10)).toBe('2026-07-10');
   });
 
   test('§1.7 MTM format line parsing', () => {
